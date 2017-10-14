@@ -1,7 +1,9 @@
 from centos:centos7
 
 RUN yum -y install git perl-autodie && \
-    yum -y groupinstall 'Development Tools'
+    yum -y groupinstall 'Development Tools' && \
+    yum clean all && \
+    rm -rf /var/cache/yum
 
 RUN git clone -b '2017.09' --depth=1 --single-branch  https://github.com/rakudo/rakudo.git && \
     cd rakudo && perl Configure.pl --gen-moar --prefix /opt/rakudo-star-2017.09 && \
