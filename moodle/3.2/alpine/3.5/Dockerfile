@@ -29,6 +29,7 @@ RUN apk add --update \
     php5-fpm \
     supervisor \
     tzdata \
+    certbot
 
 RUN rm -rf /var/cache/apk/*
 RUN adduser -D -u 1000 -g 'www' www 
@@ -38,8 +39,6 @@ RUN chown -R www:www /var/lib/nginx
 RUN chown -R www:www /www
 RUN mkdir -p /var/log/supervisor
 COPY conf/nginx.conf /etc/nginx/nginx.conf
-COPY letsencrypt /etc/letsencrypt
-RUN  chown root.root /etc/letsencrypt
 COPY supervisord.conf /etc/supervisord.conf
 
 ENV PHP_FPM_USER="www"
@@ -61,6 +60,7 @@ RUN sed -i "s|;listen.mode\s*=\s*0660|listen.mode = ${PHP_FPM_LISTEN_MODE}|g" /e
 RUN sed -i "s|user\s*=\s*nobody|user = ${PHP_FPM_USER}|g" /etc/php5/php-fpm.conf
 RUN sed -i "s|group\s*=\s*nobody|group = ${PHP_FPM_GROUP}|g" /etc/php5/php-fpm.conf
 RUN sed -i "s|;log_level\s*=\s*notice|log_level = notice|g" /etc/php5/php-fpm.conf #uncommenting line 
+RUN echo 'env[MOODLE_DOMAIN] = $MOODLE_DOMAIN' >> /etc/php5/php-fpm.conf
 
 #Modifying configuration file php.ini
 RUN sed -i "s|display_startup_errors\s*=\s*Off|display_startup_errors = ${PHP_DISPLAY_STARTUP_ERRORS}|i" /etc/php5/php.ini
@@ -84,6 +84,10 @@ COPY conf/config.php /www/config.php
 RUN chmod 640 /www/config.php && chown www.www /www/config.php
 
 EXPOSE 80 443
+
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod 750 /usr/local/bin/entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
 
