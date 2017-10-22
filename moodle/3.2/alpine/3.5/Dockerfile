@@ -83,6 +83,8 @@ RUN mkdir /moodledata && chmod 777 /moodledata
 COPY conf/config.php /www/config.php
 RUN chmod 640 /www/config.php && chown www.www /www/config.php
 
+RUN echo "*/10 * * * * php /www/admin/cli/cron.php" | crontab -
+
 EXPOSE 80 443
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
